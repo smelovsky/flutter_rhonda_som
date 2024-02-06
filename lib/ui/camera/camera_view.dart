@@ -36,9 +36,11 @@ class _CameraViewState extends State<CameraView> {
     super.initState();
     _tcpBloc =  BlocProvider.of<CameraBloc>(context);
 
+
     _hostEditingController = TextEditingController(text: '192.168.42.1');
     _portEditingController = TextEditingController(text: '2020');
     _scrollController = ScrollController(initialScrollOffset: 0);
+    print("initState ${_tcpBloc?.state.messages.length}");
 
   }
 
@@ -47,11 +49,9 @@ class _CameraViewState extends State<CameraView> {
 
     return BlocConsumer<CameraBloc, CameraState>(
         bloc: _tcpBloc,
+
         listener: (BuildContext context, CameraState tcpState) {
-          if (tcpState.connectionState == SocketConnectionState.Connected) {
-            ScaffoldMessenger.of(context)
-              ..hideCurrentSnackBar();
-          } else if (tcpState.connectionState == SocketConnectionState.Failed) {
+          if (tcpState.connectionState == SocketConnectionState.Failed) {
             ScaffoldMessenger.of(context)
               ..hideCurrentSnackBar()
               ..showSnackBar(
@@ -63,14 +63,18 @@ class _CameraViewState extends State<CameraView> {
                   backgroundColor: Colors.red,
                 ),
               );
+          } else {
+            ScaffoldMessenger.of(context)
+              ..hideCurrentSnackBar();
           }
         },
+
         builder: (context, tcpState) {
 
           if (tcpState.connectionState == SocketConnectionState.None || tcpState.connectionState == SocketConnectionState.Failed) {
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8.0),
-              child: ListView(
+              child: Column(
                 children: [
                   TextFormField(
                     controller: _hostEditingController,
@@ -107,11 +111,19 @@ class _CameraViewState extends State<CameraView> {
               ),
             );
           } else if (tcpState.connectionState == SocketConnectionState.Connecting) {
-            return Center(
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8.0),
               child: Column(
                 children: <Widget>[
-                  CircularProgressIndicator(),
-                  Text('Connecting...'),
+                  Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: CircularProgressIndicator(),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Text('Connecting...'),
+                  ),
+
                   ElevatedButton(
                     child: Text('Abort'),
                     onPressed: () {
@@ -144,7 +156,26 @@ class _CameraViewState extends State<CameraView> {
                           return Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: Bubble(
-                              child: Text(m.message),
+
+                              child:
+                              GestureDetector(
+                                onTap: () {
+                                  if (m.message.contains("JPG")) {
+                                    showDialog(
+                                        context: context,
+                                        builder: (context) => AlertDialog(
+                                          title: Text(m.message, style: TextStyle(height: 5, fontSize: 10),),
+                                          content: Image.asset("assets/images/rhonda_icon_big.png"),
+                                          //content: Image.network('C:\DCIM\100_RHND\SOM_0387.JPG'),
+                                        )
+                                    );
+                                  }
+
+                                },
+                                child: new Text(m.message),
+                              ),
+
+
                               alignment: m.sender == Sender.Client ? Alignment.centerRight : Alignment.centerLeft,
                             ),
                           );

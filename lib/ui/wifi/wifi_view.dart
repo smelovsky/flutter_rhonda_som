@@ -34,6 +34,7 @@ class _WifiViewState extends State<WifiView> {
                 child: Column(
                     children: <Widget>[
 
+                      //Image.network('https://i.imgur.com/CqmBjo5.jpg'),
                       ElevatedButton.icon(
                         icon: const Icon(Icons.refresh),
                         label: const Text('Scan WiFi access points'),

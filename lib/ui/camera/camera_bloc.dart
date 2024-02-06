@@ -1,15 +1,11 @@
 import 'dart:async';
 import 'dart:io';
-
 import 'package:bloc/bloc.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:meta/meta.dart';
 import 'package:flutter/foundation.dart';
-
 import '../../proto/packers/packers_mapper.dart';
-import '../../proto/rhsom/still.pbenum.dart';
 import 'model/message.dart';
-
 
 part 'camera_event.dart';
 part 'camera_state.dart';
@@ -85,69 +81,28 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
 
     print("${event.message}");
 
+    String typeUrl = "";
+
     if (event.message == 'get state') {
-      final typeUrl = "CameraExt.GetState";
-      final packersMapper = PackersMapper.map[typeUrl];
-      if (packersMapper != null) {
-        final cmdBuf = packersMapper.pack(GetStateApp());
-        final buf = MessagePacker.pack(typeUrl, cmdBuf);
-        Stream<List<int>> stream() async* { yield buf; }
-        _socket?.addStream(stream());
-      }
+      typeUrl = "CameraExt.GetState";
     } else if (event.message == 'get video settings') {
-      final typeUrl = "CameraExt.Capture.Video.GetSettings";
-      final packersMapper = PackersMapper.map[typeUrl];
-      if (packersMapper != null) {
-        final cmdBuf = packersMapper.pack(GetVideoSettingsApp());
-        final buf = MessagePacker.pack(typeUrl, cmdBuf);
-        Stream<List<int>> stream() async* { yield buf; }
-        _socket?.addStream(stream());
-      }
+      typeUrl = "CameraExt.Capture.Video.GetSettings";
     } else if (event.message == 'stop streaming') {
-      final typeUrl = "Camera.Streaming.Stop";
-      final packersMapper = PackersMapper.map[typeUrl];
-      if (packersMapper != null) {
-        final cmdBuf = packersMapper.pack(StreamingStopApp());
-        final buf = MessagePacker.pack(typeUrl, cmdBuf);
-        Stream<List<int>> stream() async* {
-          yield buf;
-        }
-        _socket?.addStream(stream());
-      }
+      typeUrl = "Camera.Streaming.Stop";
     } else if (event.message == 'start streaming') {
-      final typeUrl = "Camera.Streaming.Start";
-      final packersMapper = PackersMapper.map[typeUrl];
-      if (packersMapper != null) {
-        final cmdBuf = packersMapper.pack(StreamingStartApp());
-        final buf = MessagePacker.pack(typeUrl, cmdBuf);
-        Stream<List<int>> stream() async* {
-          yield buf;
-        }
-        _socket?.addStream(stream());
-      }
+      typeUrl = "Camera.Streaming.Start";
     } else if (event.message == 'start capture') {
-      final typeUrl = "Camera.Capture.Still.CaptureStill";
-      final packersMapper = PackersMapper.map[typeUrl];
-      if (packersMapper != null) {
-        final cmdBuf = packersMapper.pack(CaptureStillApp(mode: CaptureStill_Mode.CAPTURE_SINGLE));
-        final buf = MessagePacker.pack(typeUrl, cmdBuf);
-        Stream<List<int>> stream() async* {
-          yield buf;
-        }
-        _socket?.addStream(stream());
-      }
+      typeUrl = "Camera.Capture.Still.CaptureStill";
     } else if (event.message == 'get still settings') {
-      final typeUrl = "CameraExt.Capture.Still.GetSettings";
-      final packersMapper = PackersMapper.map[typeUrl];
-      print("${packersMapper}");
-      if (packersMapper != null) {
-        final cmdBuf = packersMapper.pack(GetStillSettingsApp());
-        final buf = MessagePacker.pack(typeUrl, cmdBuf);
-        Stream<List<int>> stream() async* {
-          yield buf;
-        }
-        _socket?.addStream(stream());
-      }
+      typeUrl = "CameraExt.Capture.Still.GetSettings";
+    }
+
+    final packersMapper = PackersMapper.packers[typeUrl];
+    if (packersMapper != null) {
+      final cmdBuf = packersMapper.pack();
+      final buf = MessagePacker.pack(typeUrl, cmdBuf);
+      Stream<List<int>> stream() async* { yield buf; }
+      _socket?.addStream(stream());
     }
 
     print(" sendMessage DONE");
@@ -159,7 +114,6 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
 
     try {
       _socketConnectionTask = await Socket.startConnect(event.host, event.port);
-
       _socket = await _socketConnectionTask!.socket.timeout(Duration(seconds: 5));
 
       _socketStreamSub = _socket!.asBroadcastStream().listen((event) {
@@ -173,27 +127,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
         final messageApp = MessagePacker.unpuck(buf);
 
         if (messageApp != null) {
-          if (messageApp.runtimeType == InitialSynApp) {
-            txt = "connected";
-          } else if (messageApp.runtimeType == GetStateResponseApp) {
-            final message = messageApp as  GetStateResponseApp;
-            txt = "${message.state}";
-          }  else if (messageApp.runtimeType == GetVideoSettingsResponseApp) {
-            final message = messageApp as  GetVideoSettingsResponseApp;
-            txt = "${message.mode}, ${message.codec}";
-          } else if (messageApp.runtimeType == StreamingStopResponseApp) {
-            final message = messageApp as StreamingStopResponseApp;
-            txt = "${message.ret}";
-          } else if (messageApp.runtimeType == StreamingStartResponseApp) {
-            final message = messageApp as StreamingStartResponseApp;
-            txt = "${message.ret}";
-          } else if (messageApp.runtimeType == CaptureStillObjectCompleteApp) {
-            final message = messageApp as CaptureStillObjectCompleteApp;
-            txt = "${message.name}, ${message.objectType}";
-          } else if (messageApp.runtimeType == GetStillSettingsResponseApp) {
-            final message = messageApp as GetStillSettingsResponseApp;
-            txt = "${message.resolution}, Compression ratio: ${message.compressionRatio}";
-          }
+          txt = messageApp.getResult();
 
           add(
               MessageReceived(
@@ -219,6 +153,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
 
       print("SocketConnectionState.Connected");
       emit(state.copyWithConnectionState(connectionState: SocketConnectionState.Connected));
+
     } catch (err) {
       if (err.runtimeType == TimeoutException) {
         print("SocketConnectionState.Failed (Timeout) ");
@@ -227,6 +162,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
       }
 
       emit(state.copyWithConnectionState(connectionState: SocketConnectionState.Failed));
+
     }
 
   }

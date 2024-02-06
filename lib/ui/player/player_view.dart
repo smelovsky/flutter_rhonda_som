@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_vlc_player/flutter_vlc_player.dart';
 
 class PlayerPage extends StatefulWidget {
-  String dataSource = "";
+  final String dataSource;
 
   PlayerPage(this.dataSource,{super.key});
 
@@ -19,19 +19,23 @@ class _PlayerPageState extends State<PlayerPage> {
 
   late VlcPlayerController _videoPlayerController;
 
-  Future<void> initializePlayer() async {}
+  void initializePlayer() {
+    _videoPlayerController = VlcPlayerController.network(
+      dataSource,
+      hwAcc: HwAcc.auto,
+      autoPlay: false,
+      options: VlcPlayerOptions(),
+    );
+  }
 
   @override
   void initState() {
     super.initState();
 
-    _videoPlayerController = VlcPlayerController.network(
-      dataSource,
-      hwAcc: HwAcc.auto,
-      autoPlay: true,
-      options: VlcPlayerOptions(),
-    );
+    initializePlayer();
+
   }
+
 
   @override
   void dispose() async {
@@ -50,10 +54,16 @@ class _PlayerPageState extends State<PlayerPage> {
             child: Column(
                 children: <Widget>[
 
-                  VlcPlayer(
-                    controller: _videoPlayerController,
-                    aspectRatio: 16 / 9,
-                    placeholder: Center(child: CircularProgressIndicator()),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.grey,
+                    ),
+                    height: MediaQuery.of(context).size.width / (16 / 9),
+                    child: VlcPlayer(
+                      controller: _videoPlayerController,
+                      aspectRatio: 16 / 9,
+                      placeholder: Center(child: CircularProgressIndicator()),
+                    ),
                   ),
 
                   Padding(

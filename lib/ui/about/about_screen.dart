@@ -3,15 +3,16 @@ import 'package:flutter/material.dart';
 
 class AboutScreen extends StatelessWidget {
 
-  const AboutScreen({Key? key}) : super(key: key);
+  AboutScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
 
-    return const Padding(
+    return Padding(
       padding: EdgeInsets.only(top: 40, bottom:0, left:10, right:10),
       child: Column(
         children: [
+          Image.asset("assets/images/rhonda_icon_big.png"),
           Align(
               alignment: Alignment.center,
               child: Text(
@@ -21,7 +22,13 @@ class AboutScreen extends StatelessWidget {
           Align(
               alignment: Alignment.center,
               child: Text(
-                  'created by Michael Smelovsky (msmelovs@rhonda.ru)'
+                  'created by Michael Smelovsky'
+              )
+          ),
+          Align(
+              alignment: Alignment.center,
+              child: Text(
+                  '(msmelovs@rhonda.ru)'
               )
           ),
           Align(
@@ -30,8 +37,30 @@ class AboutScreen extends StatelessWidget {
                   'created with Flutter'
               )
           ),
+
         ],
       )
+    );
+  }
+}
+
+class MyButton extends StatelessWidget {
+  const MyButton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    // The InkWell wraps the custom flat button widget.
+    return InkWell(
+      // When the user taps the button, show a snackbar.
+      onTap: () {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Tap'),
+        ));
+      },
+      child: const Padding(
+        padding: EdgeInsets.all(12),
+        child: Text('Flat Button'),
+      ),
     );
   }
 }

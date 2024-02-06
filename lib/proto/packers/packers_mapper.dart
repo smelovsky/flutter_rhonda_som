@@ -6,20 +6,20 @@ import '../rhsom/streaming.pb.dart' as streaming;
 import '../rhsom/video_ext.pb.dart'  as video_ext;
 import '../rhsom/still_ext.pb.dart'  as still_ext;
 import '../rhsom/still.pb.dart' as still;
+import 'message_app.dart';
 
 abstract class PayloadPacker {
   String typeUrl = "";
   MessageApp unpack(List<int> data);
-  List<int> pack(MessageApp message);
+  List<int> pack() {
+    List<int> buf = [];
+    return buf;
+  }
 }
 
 class PackersMapper {
 
-  static final packers = [
-    PayloadPacker,
-  ];
-
-  static Map<String, PayloadPacker> map = {
+  static Map<String, PayloadPacker> packers = {
     InitialSynPacker().typeUrl: InitialSynPacker(),
     GetStatePacker().typeUrl: GetStatePacker(),
     GetStateResponsePacker().typeUrl: GetStateResponsePacker(),
@@ -33,6 +33,7 @@ class PackersMapper {
     CaptureStillObjectCompletePacker().typeUrl: CaptureStillObjectCompletePacker(),
     GetStillSettingsPacker().typeUrl: GetStillSettingsPacker(),
     GetStillSettingsResponsePacker().typeUrl: GetStillSettingsResponsePacker(),
+    CaptureStillCaptureStillResponsePacker().typeUrl: CaptureStillCaptureStillResponsePacker(),
 
   };
 
@@ -79,7 +80,7 @@ class MessagePacker {
 
     print("${message.typeUrl}");
 
-    final packer = PackersMapper.map[message.typeUrl];
+    final packer = PackersMapper.packers[message.typeUrl];
 
     print("packer: ${packer}");
 
@@ -112,14 +113,6 @@ class InitialSynPacker extends PayloadPacker {
     );
   }
 
-  @override
-  List<int> pack(MessageApp message) {
-
-    List<int> buf = [];
-
-    return buf;
-  }
-
 }
 
 class GetStatePacker extends PayloadPacker {
@@ -131,15 +124,6 @@ class GetStatePacker extends PayloadPacker {
   @override
   GetStateApp unpack(List<int> data) {
     return GetStateApp();
-  }
-
-  @override
-  List<int> pack(MessageApp message) {
-
-    GetStateApp msg = message as GetStateApp;
-
-    List<int> buf = GetState().writeToBuffer();
-    return buf;
   }
 
 }
@@ -164,12 +148,6 @@ class GetStateResponsePacker extends PayloadPacker {
     );
   }
 
-  @override
-  List<int> pack(MessageApp message) {
-    List<int> buf = [];
-    return buf;
-  }
-
 }
 
 class GetVideoSettingsPacker extends PayloadPacker {
@@ -184,10 +162,7 @@ class GetVideoSettingsPacker extends PayloadPacker {
   }
 
   @override
-  List<int> pack(MessageApp message) {
-
-    GetVideoSettingsApp msg = message as GetVideoSettingsApp;
-
+  List<int> pack() {
     List<int> buf = video_ext.GetSettings().writeToBuffer();
     return buf;
   }
@@ -213,12 +188,6 @@ class GetVideoSettingsResponsePacker extends PayloadPacker {
     );
   }
 
-  @override
-  List<int> pack(MessageApp message) {
-    List<int> buf = [];
-    return buf;
-  }
-
 }
 
 class GetStillSettingsPacker extends PayloadPacker {
@@ -233,10 +202,7 @@ class GetStillSettingsPacker extends PayloadPacker {
   }
 
   @override
-  List<int> pack(MessageApp message) {
-
-    GetStillSettingsApp msg = message as GetStillSettingsApp;
-
+  List<int> pack() {
     List<int> buf = still_ext.GetSettings().writeToBuffer();
     return buf;
   }
@@ -262,12 +228,6 @@ class GetStillSettingsResponsePacker extends PayloadPacker {
     );
   }
 
-  @override
-  List<int> pack(MessageApp message) {
-    List<int> buf = [];
-    return buf;
-  }
-
 }
 
 class StreamingStopPacker extends PayloadPacker {
@@ -279,13 +239,6 @@ class StreamingStopPacker extends PayloadPacker {
   @override
   StreamingStopApp unpack(List<int> data) {
     return StreamingStopApp();
-  }
-
-  @override
-  List<int> pack(MessageApp message) {
-    StreamingStopApp msg = message as StreamingStopApp;
-    List<int> buf = [];
-    return buf;
   }
 
 }
@@ -304,13 +257,6 @@ class StreamingStopResponsePacker extends PayloadPacker {
     );
   }
 
-  @override
-  List<int> pack(MessageApp message) {
-    StreamingStopResponseApp msg = message as StreamingStopResponseApp;
-    List<int> buf = [];
-    return buf;
-  }
-
 }
 
 class StreamingStartPacker extends PayloadPacker {
@@ -322,13 +268,6 @@ class StreamingStartPacker extends PayloadPacker {
   @override
   StreamingStartApp unpack(List<int> data) {
     return StreamingStartApp();
-  }
-
-  @override
-  List<int> pack(MessageApp message) {
-    StreamingStartApp msg = message as StreamingStartApp;
-    List<int> buf = [];
-    return buf;
   }
 
 }
@@ -345,13 +284,6 @@ class StreamingStartResponsePacker extends PayloadPacker {
     return StreamingStartResponseApp(
       ret: proto.ret,
     );
-  }
-
-  @override
-  List<int> pack(MessageApp message) {
-    StreamingStartResponseApp msg = message as StreamingStartResponseApp;
-    List<int> buf = [];
-    return buf;
   }
 
 }
@@ -372,11 +304,8 @@ class CaptureStillPacker extends PayloadPacker {
   }
 
   @override
-  List<int> pack(MessageApp message) {
-    CaptureStillApp msg = message as CaptureStillApp;
-
-    List<int> buf = still.CaptureStill(mode: msg.mode).writeToBuffer();
-
+  List<int> pack() {
+    List<int> buf = still.CaptureStill(mode: still.CaptureStill_Mode.CAPTURE_SINGLE).writeToBuffer();
     return buf;
   }
 
@@ -400,107 +329,26 @@ class CaptureStillObjectCompletePacker extends PayloadPacker {
     );
   }
 
+}
+
+class CaptureStillCaptureStillResponsePacker extends PayloadPacker {
+
+  CaptureStillCaptureStillResponsePacker(){
+    super.typeUrl = "Camera.Capture.Still.CaptureStill.Response";
+  }
+
   @override
-  List<int> pack(MessageApp message) {
-    List<int> buf = [];
-    return buf;
+  CaptureStillCaptureStillResponseApp unpack(List<int> data) {
+
+    still.CaptureStill_Response proto = still.CaptureStill_Response.fromBuffer(data);
+
+    return CaptureStillCaptureStillResponseApp(
+
+      ret: proto.ret,
+
+    );
   }
 
 }
 
-////////////////////////////////////////////////////////////////////////////////
 
-abstract class MessageApp {
-}
-
-class InitialSynApp extends MessageApp {
-  int protocolVersionMajor = 0;
-  int protocolVersionMinor = 0;
-
-  InitialSynApp({required this.protocolVersionMajor, required this.protocolVersionMinor}) {}
-}
-
-class GetStateApp extends MessageApp {}
-
-class GetStateResponseApp extends MessageApp {
-  //ErrorCode status = ErrorCode.STATUS_SUCCESS;
-  State state = State.STATE_IDLE;
-  bool recorderActive = false;
-  bool streamActive = false;
-  bool uvcActive = false;
-  GetStateResponseApp({
-    //required this.status,
-    required this.state,
-    required this.recorderActive,
-    required this.streamActive,
-    required this.uvcActive,
-  }) {}
-}
-
-class GetVideoSettingsApp extends MessageApp {}
-
-class GetVideoSettingsResponseApp extends MessageApp {
-  video_ext.ErrorCode ret = video_ext.ErrorCode.STATUS_UNKNOWN_ERROR;
-  video_ext.Mode mode = video_ext.Mode.MODE_4KP30;
-  video_ext.Codec codec = video_ext.Codec.H264;
-  int bitrate = 0;
-
-  GetVideoSettingsResponseApp({
-    required this.ret,
-    required this.mode,
-    required this.codec,
-    required this.bitrate,
-  }) {}
-}
-
-class StreamingStopApp extends MessageApp {}
-
-class StreamingStopResponseApp extends MessageApp {
-  streaming.ErrorCode ret = streaming.ErrorCode.STATUS_UNKNOWN_ERROR;
-  StreamingStopResponseApp({
-    required this.ret,
-  }) {}
-}
-
-class StreamingStartApp extends MessageApp {}
-
-class StreamingStartResponseApp extends MessageApp {
-  streaming.ErrorCode ret = streaming.ErrorCode.STATUS_UNKNOWN_ERROR;
-  StreamingStartResponseApp({
-    required this.ret,
-  }) {}
-}
-
-class CaptureStillApp extends MessageApp {
-  still.CaptureStill_Mode mode = still.CaptureStill_Mode.CAPTURE_SINGLE;
-
-  CaptureStillApp({
-    required this.mode,
-  }) {}
-}
-
-class CaptureStillObjectCompleteApp extends MessageApp {
-  ObjectInfo_ObjectType objectType = ObjectInfo_ObjectType.OBJECT_TYPE_UNKNOWN;
-  String name = "";
-
-  CaptureStillObjectCompleteApp({
-    required this.objectType,
-    required this.name,
-
-  }) {}
-}
-
-class GetStillSettingsApp extends MessageApp {}
-
-class GetStillSettingsResponseApp extends MessageApp {
-  still_ext.ErrorCode ret = still_ext.ErrorCode.STATUS_UNKNOWN_ERROR;
-  still_ext.Resolution resolution = still_ext.Resolution.RESOLUTION_12MP;
-  int compressionRatio = 0;
-
-  GetStillSettingsResponseApp({
-    required this.ret,
-    required this.resolution,
-    required this.compressionRatio,
-
-  }) {}
-}
