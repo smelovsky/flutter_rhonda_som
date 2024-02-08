@@ -1,5 +1,8 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+
+import '../web/web_page.dart';
 
 class AboutScreen extends StatelessWidget {
 
@@ -13,6 +16,22 @@ class AboutScreen extends StatelessWidget {
       child: Column(
         children: [
           Image.asset("assets/images/rhonda.png"),
+        Padding(
+          padding: EdgeInsets.only(top: 20, bottom:20, left:10, right:10),
+          child: RichText(
+            text: TextSpan(
+              text: 'https://www.rhondasoftware.com',
+              style:TextStyle(color: Colors.blue),
+              recognizer: TapGestureRecognizer()
+                ..onTap = () {
+                  Navigator.of(context).push(MaterialPageRoute(
+                      builder: (BuildContext context) => WebViewApp(url: 'https://www.rhondasoftware.com')
+                  ));
+                },
+            ),
+          ),
+        ),
+
           Align(
               alignment: Alignment.center,
               child: Text(
