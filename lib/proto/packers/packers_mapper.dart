@@ -41,7 +41,7 @@ class PackersMapper {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class MessagePacker {
+abstract class MessagePacker {
 
   static List<int> pack(String typeUrl, List<int> cmdBuf) {
 
@@ -72,7 +72,7 @@ class MessagePacker {
     return buf;
   }
 
-  static MessageApp? unpuck(List<int> buf) {
+  static MessageApp? unpack(List<int> buf) {
 
     Message message = Message.fromBuffer(buf);
 

@@ -30,9 +30,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
   Widget build(BuildContext context) {
 
     String dataSource = (ref.watch(settingsProvider).isTestMode) ?
-    'https://media.w3.org/2010/05/sintel/trailer.mp4'
-        :
-    'rtmp://192.168.42.1:1935/v4l2/video0';
+      ref.read(settingsProvider).dataSourceTest :
+      ref.read(settingsProvider).dataSourceRhondaSom;
 
     return Scaffold(
         appBar: AppBar(
@@ -49,6 +48,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
             isScrollable: true,
             tabs: [
               Tab(
+                //icon: Icon(Icons.info),
+                text: "About",
+              ),
+              Tab(
                 //icon: Icon(Icons.wifi),
                 text: "WiFi",
               ),
@@ -64,11 +67,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
                 //icon: Icon(Icons.settings),
                 text: "Settings",
               ),
-              Tab(
-                //icon: Icon(Icons.info),
-                text: "About",
-              ),
-
             ],
           ),
 
@@ -76,12 +74,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
         body: TabBarView(
           controller: _tabController,
           children: [
+            AboutScreen(),
             WifiView(),
             CameraView(),
             PlayerPage(dataSource),
             SettingsScreen(ref),
-            AboutScreen(),
-
           ],
         )
     );

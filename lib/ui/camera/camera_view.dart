@@ -71,7 +71,10 @@ class _CameraViewState extends State<CameraView> {
 
         builder: (context, tcpState) {
 
-          if (tcpState.connectionState == SocketConnectionState.None || tcpState.connectionState == SocketConnectionState.Failed) {
+          if (tcpState.connectionState == SocketConnectionState.None ||
+              tcpState.connectionState == SocketConnectionState.Failed ||
+              tcpState.connectionState == SocketConnectionState.Aborted) {
+
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8.0),
               child: Column(
@@ -94,19 +97,24 @@ class _CameraViewState extends State<CameraView> {
                       hintText: 'Enter the port here, e. g. 8000',
                     ),
                   ),
-                  ElevatedButton(
-                    child: Text('Connect'),
-                    onPressed: isValidHost(_hostEditingController!.text) && isValidPort(_portEditingController!.text)
-                        ? () {
-                      _tcpBloc!.add(
-                          Connect(
-                              host: _hostEditingController!.text,
-                              port: int.parse(_portEditingController!.text)
-                          )
-                      );
-                    }
-                        : null,
-                  )
+
+                  Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: ElevatedButton(
+                      child: Text('Connect'),
+                      onPressed: isValidHost(_hostEditingController!.text) && isValidPort(_portEditingController!.text)
+                          ? () {
+                        _tcpBloc!.add(
+                            Connect(
+                                host: _hostEditingController!.text,
+                                port: int.parse(_portEditingController!.text)
+                            )
+                        );
+                      }
+                          : null,
+                    ),
+                  ),
+
                 ],
               ),
             );
@@ -127,7 +135,7 @@ class _CameraViewState extends State<CameraView> {
                   ElevatedButton(
                     child: Text('Abort'),
                     onPressed: () {
-                      _tcpBloc!.add(Disconnect());
+                      _tcpBloc!.add(Abort());
                     },
                   )
                 ],

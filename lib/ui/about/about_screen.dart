@@ -12,7 +12,7 @@ class AboutScreen extends StatelessWidget {
       padding: EdgeInsets.only(top: 40, bottom:0, left:10, right:10),
       child: Column(
         children: [
-          Image.asset("assets/images/rhonda_icon_big.png"),
+          Image.asset("assets/images/rhonda.png"),
           Align(
               alignment: Alignment.center,
               child: Text(

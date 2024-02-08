@@ -4,6 +4,7 @@ enum SocketConnectionState {
   Connecting,
   Disconnecting,
   Connected,
+  Aborted,
   Failed,
   None
 }

@@ -22,6 +22,11 @@ class Disconnect extends CameraEvent {
   String toString() => 'Disconnect { }';
 }
 
+class Abort extends CameraEvent {
+  @override
+  String toString() => 'Abort { }';
+}
+
 class ErrorOccured extends CameraEvent {
   @override
   String toString() => '''ErrorOccured { }''';

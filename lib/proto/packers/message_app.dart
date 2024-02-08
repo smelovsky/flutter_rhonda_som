@@ -5,9 +5,9 @@ import '../rhsom/video_ext.pb.dart'  as video_ext;
 import '../rhsom/still_ext.pb.dart'  as still_ext;
 import '../rhsom/still.pb.dart' as still;
 
-abstract class MessageApp {
+interface class MessageApp {
   String getResult() {
-    return "not implemented yet";
+    return "not implemented";
   }
 }
 

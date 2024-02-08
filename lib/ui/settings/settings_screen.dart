@@ -15,6 +15,40 @@ class SettingsScreen extends StatelessWidget {
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
+    String dataSource = (ref.watch(settingsProvider).isTestMode) ?
+    ref.read(settingsProvider).dataSourceTest :
+    ref.read(settingsProvider).dataSourceRhondaSom;
+
+    return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8.0),
+        child: Column(
+          children: [
+            ListTile(
+              title: const Text('Dark theme'),
+              trailing: CupertinoSwitch(
+                value: isDark,
+                onChanged: (value) {
+                  AppSettings.themeIsLight.value = !value;
+                },
+              ),
+            ),
+            ListTile(
+              title: const Text('Player test mode'),
+              trailing: CupertinoSwitch(
+                value: ref.watch(settingsProvider).isTestMode,
+                onChanged: (value) {
+                  ref.refresh(settingsProvider).isTestMode = value;
+                },
+              ),
+            ),
+            Flexible(
+              child:Text(dataSource),
+            ),
+          ],
+        )
+    );
+
+    /*
     return Scaffold(
       appBar: AppBar(),
       body: Column(
@@ -37,8 +71,11 @@ class SettingsScreen extends StatelessWidget {
               },
             ),
           ),
+          Text(dataSource),
         ],
       ),
     );
+
+     */
   }
 }

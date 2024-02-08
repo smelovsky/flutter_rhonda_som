@@ -22,8 +22,10 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
       emit(state.copyWithNewMessage(message: event.message));
     });
 
-    on<Connect>((event, emit) {
+    on<Connect>((event, emit) async {
       print("on<Connect> ${event.host}");
+
+      state.messages.clear();
 
       emit(state.copyWithNewMessage(message: MessageCamera(
         message: "connect",
@@ -31,7 +33,16 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
         sender: Sender.Client,
       )));
 
-      _connect(event);
+      emit(state.copyWithConnectionState(connectionState: SocketConnectionState.Connecting));
+      Future<bool> ret = _connect(event);
+      if (await ret) {
+        emit(state.copyWithConnectionState(connectionState: SocketConnectionState.Connected));
+      } else {
+        if (state.connectionState != SocketConnectionState.Aborted) {
+          emit(state.copyWithConnectionState(connectionState: SocketConnectionState.Failed));
+        }
+      }
+
     });
 
     on<SendMessage>((event, emit) {
@@ -53,6 +64,13 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
       _disconnect();
 
       emit(state.copyWithConnectionState(connectionState: SocketConnectionState.None));
+    });
+
+    on<Abort>((event, emit) {
+      print("on<Abort>");
+      _disconnect();
+
+      emit(state.copyWithConnectionState(connectionState: SocketConnectionState.Aborted));
     });
 
     on<ErrorOccured>((event, emit) {
@@ -108,9 +126,9 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
     print(" sendMessage DONE");
   }
 
-  void _connect(Connect event) async {
+  Future<bool> _connect(Connect event) async {
 
-    emit(state.copyWithConnectionState(connectionState: SocketConnectionState.Connecting));
+    //emit(state.copyWithConnectionState(connectionState: SocketConnectionState.Connecting));
 
     try {
       _socketConnectionTask = await Socket.startConnect(event.host, event.port);
@@ -124,7 +142,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
 
         var buf = event.sublist(8);
 
-        final messageApp = MessagePacker.unpuck(buf);
+        final messageApp = MessagePacker.unpack(buf);
 
         if (messageApp != null) {
           txt = messageApp.getResult();
@@ -152,7 +170,7 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
       });
 
       print("SocketConnectionState.Connected");
-      emit(state.copyWithConnectionState(connectionState: SocketConnectionState.Connected));
+      //emit(state.copyWithConnectionState(connectionState: SocketConnectionState.Connected));
 
     } catch (err) {
       if (err.runtimeType == TimeoutException) {
@@ -161,9 +179,11 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
         print("SocketConnectionState.Failed (${err.toString()})");
       }
 
-      emit(state.copyWithConnectionState(connectionState: SocketConnectionState.Failed));
-
+      //emit(state.copyWithConnectionState(connectionState: SocketConnectionState.Failed));
+      return false;
     }
+
+    return true;
 
   }
 
