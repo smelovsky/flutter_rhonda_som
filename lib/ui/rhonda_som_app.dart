@@ -5,6 +5,7 @@ import 'package:flutter_rhonda_som/ui/settings/app_settings.dart';
 import 'package:flutter_rhonda_som/ui/wifi/wifi_bloc.dart';
 import '../theme/app_theme.dart';
 import 'camera/camera_bloc.dart';
+import 'cloud/cloud_bloc.dart';
 import 'home/home_screen.dart';
 
 class RhondaSomApp extends StatefulWidget {
@@ -25,6 +26,7 @@ class _RhondaSomAppState extends State<RhondaSomApp> {
             providers: [
               BlocProvider<CameraBloc>(create: (context) => CameraBloc()),
               BlocProvider<WifiBloc>(create: (context) => WifiBloc()),
+              BlocProvider<CloudBloc>(create: (context) => CloudBloc()),
             ],
             child: MaterialApp(
               debugShowCheckedModeBanner: false,

@@ -36,7 +36,6 @@ class _CameraViewState extends State<CameraView> {
     super.initState();
     _tcpBloc =  BlocProvider.of<CameraBloc>(context);
 
-
     _hostEditingController = TextEditingController(text: '192.168.42.1');
     _portEditingController = TextEditingController(text: '2020');
     _scrollController = ScrollController(initialScrollOffset: 0);

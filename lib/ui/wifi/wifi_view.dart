@@ -25,7 +25,7 @@ class _WifiViewState extends State<WifiView> {
 
     return BlocConsumer<WifiBloc, WifiState>(
       bloc: _wifiBloc,
-      listener: (BuildContext context, WifiState tcpState) {},
+      listener: (BuildContext context, WifiState wifiState) {},
       builder: (context, wifiState) {
         return Padding(
             padding: EdgeInsets.only(top: 5, bottom:5, left:0, right:0),

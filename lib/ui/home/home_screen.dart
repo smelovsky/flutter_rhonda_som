@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/settings_notifier_provider.dart';
 import '../about/about_screen.dart';
 import '../camera/camera_view.dart';
+import '../cloud/cloud_view.dart';
 import '../player/player_view.dart';
 import '../settings/settings_screen.dart';
 import '../wifi/wifi_view.dart';
@@ -24,7 +25,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
   void initState() {
     super.initState();
 
-    _tabController = TabController(length: 5, vsync: this);
+    _tabController = TabController(length: 6, vsync: this);
   }
   @override
   Widget build(BuildContext context) {
@@ -56,6 +57,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
                 text: "WiFi",
               ),
               Tab(
+                text: "Cloud",
+              ),
+              Tab(
                 //icon: Icon(Icons.camera),
                 text: "Camera",
               ),
@@ -76,6 +80,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStat
           children: [
             AboutScreen(),
             WifiView(),
+            CloudView(ref),
             CameraView(),
             PlayerPage(dataSource),
             SettingsScreen(ref),
