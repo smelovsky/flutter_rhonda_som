@@ -15,7 +15,7 @@ class CloudBloc extends Bloc<CloudEvent, CloudState> {
 
   CloudBloc() : super(CloudState.initial()) {
 
-    on<TestCloudEvent>((event, emit) async {
+    on<ConnectTestCloudEvent>((event, emit) async {
 
       emit(state.copyWithStateAndResult(
         viewState: CloudViewState.inprogress,
@@ -43,7 +43,7 @@ class CloudBloc extends Bloc<CloudEvent, CloudState> {
         ));
 
       } else {
-        print("on<TestCloudEvent> ERROR");
+        print("on<TestCloudEvent> ERROR (${state.viewState})");
 
         if (state.viewState != CloudViewState.aborted) {
           emit(state.copyWithState(viewState: CloudViewState.failed));
@@ -51,13 +51,13 @@ class CloudBloc extends Bloc<CloudEvent, CloudState> {
 
       }
     });
+    on<AbortTestCloudEvent>((event, emit) {
+      emit(state.copyWithState(viewState: CloudViewState.aborted));
+      dio.close();
+    });
 
     on<LoginCloudEvent>((event, emit) {
 
-    });
-
-    on<AbortCloudEvent>((event, emit) {
-      dio.close();
     });
 
   }
@@ -65,7 +65,7 @@ class CloudBloc extends Bloc<CloudEvent, CloudState> {
 
   @override
   Future<void> close() {
-
+    dio.close();
     return super.close();
   }
 
@@ -79,8 +79,8 @@ class CloudBloc extends Bloc<CloudEvent, CloudState> {
       dio = Dio(); // Provide a dio instance
       dio.options.headers['Demo-Header'] = 'demo header'; // config your dio headers globally
 
-      dio.options.baseUrl = host;
-      final client = RestClient(dio);
+      //dio.options.baseUrl = host;
+      final client = RestClient(dio, baseUrl: host);
 
       await client.getTasks().then((it) {
 

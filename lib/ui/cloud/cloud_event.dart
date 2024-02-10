@@ -16,17 +16,17 @@ class LoginCloudEvent extends CloudEvent {
   String toString() => 'LoginCloudEvent { }';
 }
 
-class TestCloudEvent extends CloudEvent {
+class ConnectTestCloudEvent extends CloudEvent {
 
   String host;
 
-  TestCloudEvent ({required this.host});
+  ConnectTestCloudEvent ({required this.host});
 
   @override
   String toString() => 'TestCloudEvent { }';
 }
 
-class AbortCloudEvent extends CloudEvent {
+class AbortTestCloudEvent extends CloudEvent {
   @override
   String toString() => 'AbortCloudEvent { }';
 }

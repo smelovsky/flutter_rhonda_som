@@ -1,12 +1,12 @@
 part of 'camera_bloc.dart';
 
 enum SocketConnectionState {
-  Connecting,
-  Disconnecting,
-  Connected,
-  Aborted,
-  Failed,
-  None
+  initial,
+  connecting,
+  disconnecting,
+  connected,
+  aborted,
+  failed,
 }
 
 @immutable
@@ -21,7 +21,7 @@ class CameraState {
 
   factory CameraState.initial() {
     return CameraState(
-        connectionState: SocketConnectionState.None,
+        connectionState: SocketConnectionState.initial,
         messages: <MessageCamera>[],
     );
   }

@@ -46,19 +46,17 @@ class _CloudViewState extends State<CloudView> with RestorationMixin  {
   void initState() {
     super.initState();
 
-    print("initState");
-
     _cloudBloc =  BlocProvider.of<CloudBloc>(context);
 
-    String url = (widget.ref.read(settingsProvider).isCloudTestMode)
+    final url = (widget.ref.read(settingsProvider).isCloudTestMode)
       ? widget.ref.read(settingsProvider).restUrlTest
       : widget.ref.read(settingsProvider).restUrlRhondaCloud;
 
-    String email = (widget.ref.read(settingsProvider).isCloudTestMode)
+    final email = (widget.ref.read(settingsProvider).isCloudTestMode)
         ? widget.ref.read(settingsProvider).restEmailTest
         : widget.ref.read(settingsProvider).restEmailRhondaCloud;
 
-    String password = (widget.ref.read(settingsProvider).isCloudTestMode)
+    final password = (widget.ref.read(settingsProvider).isCloudTestMode)
         ? widget.ref.read(settingsProvider).restPasswordTest
         : widget.ref.read(settingsProvider).restPasswordRhondaCloud;
 
@@ -84,111 +82,44 @@ class _CloudViewState extends State<CloudView> with RestorationMixin  {
 
     return BlocConsumer<CloudBloc, CloudState>(
       bloc: _cloudBloc,
-      listener: (BuildContext context, CloudState cloudState) {},
+      listener: (BuildContext context, CloudState cloudState) {
+        if (cloudState.viewState == CloudViewState.failed) {
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              SnackBar(
+                content: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [Text("Connection failed"), Icon(Icons.error)],
+                ),
+                backgroundColor: Colors.red,
+              ),
+            );
+        } else {
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar();
+        }
+      },
+
       builder: (context, cloudState) {
 
         if (isCloudTestMode) {
-          if (cloudState.viewState == CloudViewState.initial ||
-              cloudState.viewState == CloudViewState.failed) {
 
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8.0),
-              child: Column(
-                children: [
-                  TextFormField(
-                    controller: _hostEditingController,
-                    autovalidateMode : AutovalidateMode.always,
-                    validator: (str) => isValidHost(str) ? null : 'Invalid hostname',
-                    decoration: InputDecoration(
-                      helperText: 'The ip address or hostname of the TCP server',
-                      hintText: 'Enter the address here, e. g. 10.0.2.2',
-                    ),
-                  ),
+          switch(cloudState.viewState) {
 
-                  Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: ElevatedButton(
-                      child: Text('Test'),
-                      onPressed: isValidHost(_hostEditingController!.text)
-                          ? () {
-                        _cloudBloc!.add(
-                            TestCloudEvent(
-                              host: _hostEditingController!.text,
-                            )
-                        );
+            case CloudViewState.initial:
+            case CloudViewState.aborted:
+            case CloudViewState.failed:
+              return _initialViewCloudTestMode();
 
-                      }
-                          : null,
-                    ),
-                  ),
+            case CloudViewState.inprogress:
+              return _inprogressViewCloudTestMode();
 
-                ],
-              ),
-            );
-          } else if (cloudState.viewState == CloudViewState.inprogress) {
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8.0),
-              child: Column(
-                children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: CircularProgressIndicator(),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Text('Connecting...'),
-                  ),
+            case CloudViewState.success:
+              return _successCloudTestMode(cloudState.result);
 
-                  ElevatedButton(
-                    child: Text('Abort'),
-                    onPressed: () {
-                      _cloudBloc?.add(AbortCloudEvent());
-                    },
-                  )
-                ],
-              ),
-            );
-          } else if (cloudState.viewState == CloudViewState.success) {
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8.0),
-              child: Column(
-                children: [
-                  TextFormField(
-                    controller: _hostEditingController,
-                    autovalidateMode : AutovalidateMode.always,
-                    validator: (str) => isValidHost(str) ? null : 'Invalid hostname',
-                    decoration: InputDecoration(
-                      helperText: 'The ip address or hostname of the TCP server',
-                      hintText: 'Enter the address here, e. g. 10.0.2.2',
-                    ),
-                  ),
-
-                  Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: ElevatedButton(
-                      child: Text('Test'),
-                      onPressed: isValidHost(_hostEditingController!.text)
-                          ? () {
-                        _cloudBloc!.add(
-                            TestCloudEvent(
-                              host: _hostEditingController!.text,
-                            )
-                        );
-
-                      }
-                          : null,
-                    ),
-                  ),
-
-                  Flexible(
-                    child:Text(cloudState.result),
-                  ),
-
-                ],
-              ),
-            );
-          } else {
-            return Container();
+            default:
+              return Container();
           }
 
         } else {
@@ -284,11 +215,94 @@ class _CloudViewState extends State<CloudView> with RestorationMixin  {
           );
         }
 
-
       },
     );
     //);
   }
+
+  Widget _hostViewCloudTestMode() {
+    return TextFormField(
+            controller: _hostEditingController,
+            autovalidateMode : AutovalidateMode.always,
+            validator: (str) => isValidHost(str) ? null : 'Invalid hostname',
+            decoration: InputDecoration(
+              helperText: 'The ip address or hostname of the TCP server',
+              hintText: 'Enter the address here, e. g. 10.0.2.2',
+            ),
+    );
+  }
+
+  Widget _actionViewCloudTestMode() {
+    return Padding(
+      padding: const EdgeInsets.all(20.0),
+      child: ElevatedButton(
+        child: Text('Connect'),
+        onPressed: isValidHost(_hostEditingController!.text)
+            ? () {
+          _cloudBloc!.add(
+              ConnectTestCloudEvent(
+                host: _hostEditingController!.text,
+              )
+          );
+
+        }
+            : null,
+      ),
+    );
+  }
+
+  Widget _initialViewCloudTestMode() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8.0),
+      child: Column(
+        children: [
+          _hostViewCloudTestMode(),
+          _actionViewCloudTestMode(),
+        ],
+      ),
+    );
+  }
+
+  Widget _inprogressViewCloudTestMode() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8.0),
+      child: Column(
+        children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: CircularProgressIndicator(),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Text('Connecting...'),
+          ),
+
+          ElevatedButton(
+            child: Text('Abort'),
+            onPressed: () {
+              _cloudBloc?.add(AbortTestCloudEvent());
+            },
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _successCloudTestMode(String result) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8.0),
+      child: Column(
+        children: [
+          _hostViewCloudTestMode(),
+          _actionViewCloudTestMode(),
+          Flexible(
+            child:Text(result),
+          ),
+        ],
+      ),
+    );
+  }
+
 }
 
 /// Format incoming numeric text to fit the format of (###) ###-#### ##

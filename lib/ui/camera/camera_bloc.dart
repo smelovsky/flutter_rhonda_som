@@ -33,13 +33,13 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
         sender: Sender.Client,
       )));
 
-      emit(state.copyWithConnectionState(connectionState: SocketConnectionState.Connecting));
+      emit(state.copyWithConnectionState(connectionState: SocketConnectionState.connecting));
       Future<bool> ret = _connect(event);
       if (await ret) {
-        emit(state.copyWithConnectionState(connectionState: SocketConnectionState.Connected));
+        emit(state.copyWithConnectionState(connectionState: SocketConnectionState.connected));
       } else {
-        if (state.connectionState != SocketConnectionState.Aborted) {
-          emit(state.copyWithConnectionState(connectionState: SocketConnectionState.Failed));
+        if (state.connectionState != SocketConnectionState.aborted) {
+          emit(state.copyWithConnectionState(connectionState: SocketConnectionState.failed));
         }
       }
 
@@ -63,20 +63,20 @@ class CameraBloc extends Bloc<CameraEvent, CameraState> {
       print("on<Disconnect>");
       _disconnect();
 
-      emit(state.copyWithConnectionState(connectionState: SocketConnectionState.None));
+      emit(state.copyWithConnectionState(connectionState: SocketConnectionState.initial));
     });
 
     on<Abort>((event, emit) {
       print("on<Abort>");
       _disconnect();
 
-      emit(state.copyWithConnectionState(connectionState: SocketConnectionState.Aborted));
+      emit(state.copyWithConnectionState(connectionState: SocketConnectionState.aborted));
     });
 
     on<ErrorOccured>((event, emit) {
       print("on<ErrorOccured>");
       _error();
-      emit(state.copyWithConnectionState(connectionState: SocketConnectionState.Failed));
+      emit(state.copyWithConnectionState(connectionState: SocketConnectionState.failed));
     });
 
   }
