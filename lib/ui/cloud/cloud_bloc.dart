@@ -1,48 +1,46 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:bloc/bloc.dart';
+import 'package:cancellation_token/cancellation_token.dart';
 import 'package:meta/meta.dart';
 import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
-import '../../retrofit/example.dart';
+import '../../freezed/dio_network_manager.dart';
+import '../../freezed/requests/isolated_network_request.dart';
+import '../../freezed/responses/movie_response.dart';
 
 part 'cloud_event.dart';
 part 'cloud_state.dart';
 
 class CloudBloc extends Bloc<CloudEvent, CloudState> {
 
-  late List<Task> listTask;
-  var dio = Dio();
+  List<MovieResponse> listMovie = [];
+  final DioNetworkManager _networkManager = DioNetworkManager();
+  late IsolatedNetworkRequest isolatedNetworkRequest;
+  late CancellationToken cancellationToken;
 
   CloudBloc() : super(CloudState.initial()) {
 
+////////////////////////////////////////////////////////////////////////////////
+
     on<ConnectTestCloudEvent>((event, emit) async {
 
-      emit(state.copyWithStateAndResult(
+      emit(state.copyWithState(
         viewState: CloudViewState.inprogress,
-        result: "",
       ));
 
-      if (await _test(event.host)) {
-
-        String str = "";
-        listTask.forEach((element) {
-          str += "${element.name}, ";
-        });
-
-        if (str.length > 500) {
-          str = str.substring(0, 500) + "..." ;
-        }
+      if (await _movie(event.host)) {
 
         print("on<TestCloudEvent> DONE");
 
-        emit(state.copyWithState(viewState: CloudViewState.success));
 
-        emit(state.copyWithStateAndResult(
+        emit(state.copyWithStateAndList(
           viewState: CloudViewState.success,
-          result: str,
+          list: listMovie,
         ));
 
       } else {
+
         print("on<TestCloudEvent> ERROR (${state.viewState})");
 
         if (state.viewState != CloudViewState.aborted) {
@@ -51,21 +49,28 @@ class CloudBloc extends Bloc<CloudEvent, CloudState> {
 
       }
     });
+
     on<AbortTestCloudEvent>((event, emit) {
+
+      cancellationToken.cancel();
+
       emit(state.copyWithState(viewState: CloudViewState.aborted));
-      dio.close();
     });
+
+////////////////////////////////////////////////////////////////////////////////
 
     on<LoginCloudEvent>((event, emit) {
 
     });
+
+////////////////////////////////////////////////////////////////////////////////
 
   }
 
 
   @override
   Future<void> close() {
-    dio.close();
+
     return super.close();
   }
 
@@ -73,27 +78,29 @@ class CloudBloc extends Bloc<CloudEvent, CloudState> {
     print("onHandleError");
   }
 
-  Future<bool> _test(String host) async {
+  Future<bool> _movie(String url) async {
 
-    try {
-      dio = Dio(); // Provide a dio instance
-      dio.options.headers['Demo-Header'] = 'demo header'; // config your dio headers globally
+    final Map<String, dynamic> _headers = {
+      HttpHeaders.contentTypeHeader: 'application/json; charset=UTF-8'
+    };
 
-      //dio.options.baseUrl = host;
-      final client = RestClient(dio, baseUrl: host);
+    Dio dio = Dio() // Provide a dio instance
+      ..options.connectTimeout = Duration(seconds: 15)
+      ..options.receiveTimeout = Duration(seconds: 15)
+      ..options.baseUrl = url
+      ..options.headers = _headers
+      ..interceptors.add(LogInterceptor(responseBody: true));
 
-      await client.getTasks().then((it) {
-
-        listTask = it;
-
-      });
-
-    } catch (err) {
-      print("connect error ${err}");
+    isolatedNetworkRequest = IsolatedNetworkRequest(dio);
+    cancellationToken = CancellationToken();
+    final response = await _networkManager.performRequest(
+        isolatedNetworkRequest, cancellationToken);
+    if (response == null) {
       return false;
     }
 
+    listMovie = response;
+
     return true;
   }
-
 }

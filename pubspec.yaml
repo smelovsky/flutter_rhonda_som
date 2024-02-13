@@ -53,10 +53,12 @@ dependencies:
   logger: any  #for logging purpose
   json_annotation: ^4.8.1
 
+  dio: ^5.4.0
+  cancellation_token: ^2.0.1
+
 dev_dependencies:
 
   flutter_native_splash: ^2.3.10
-
   flutter_launcher_icons: ^0.13.1
 
   webview_flutter: ^4.4.4
@@ -66,6 +68,7 @@ dev_dependencies:
   retrofit_generator: '>=7.0.0 <8.0.0'
   json_serializable: ^6.6.2
 
+  freezed: ^2.4.7
 
   flutter_test:
     sdk: flutter

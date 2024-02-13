@@ -7,7 +7,7 @@ class SettingsNotifier extends ChangeNotifier {
   String dataSourceRhondaSom = 'rtmp://192.168.42.1:1935/v4l2/video0';
 
   bool  isCloudTestMode = true;
-  String restUrlTest = 'https://5d42a6e2bc64f90014a56ca0.mockapi.io/api/v1';
+  String restUrlTest = 'https://www.simplifiedcoding.net/demos';
   String restEmailTest = '';
   String restPasswordTest = '';
 

@@ -11,18 +11,17 @@ enum CloudViewState {
 @immutable
 class CloudState {
   final CloudViewState viewState;
-  final String result;
-
+  final List<MovieResponse> list;
 
   CloudState({
     required this.viewState,
-    required this.result,
+    required this.list,
   });
 
   factory CloudState.initial() {
     return CloudState(
       viewState: CloudViewState.initial,
-      result: "",
+      list: [],
     );
   }
 
@@ -31,17 +30,18 @@ class CloudState {
   }) {
     return CloudState(
       viewState: viewState,
-      result: this.result,
+      list: [],
     );
   }
 
-  CloudState copyWithStateAndResult({
+
+  CloudState copyWithStateAndList({
     required CloudViewState viewState,
-    required String result,
+    required  List<MovieResponse> list,
   }) {
     return CloudState(
       viewState: viewState,
-      result: result,
+      list: list,
     );
   }
 
