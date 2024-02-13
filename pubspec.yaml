@@ -65,10 +65,12 @@ dev_dependencies:
 
 #terminal> flutter packages pub run flutter_launcher_icons:main
 
-  retrofit_generator: '>=7.0.0 <8.0.0'
+  #retrofit_generator: '>=7.0.0 <8.0.0'
+  freezed: ^2.4.7
   json_serializable: ^6.6.2
 
-  freezed: ^2.4.7
+#terminal> dart run build_runner build
+
 
   flutter_test:
     sdk: flutter
